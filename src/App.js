@@ -8,6 +8,7 @@ import PostForm from "./components/PostForm";
 import PostFilter from "./components/PostFilter";
 import MyModal from "./UI/MyModal/MyModal";
 import MyButton from "./UI/button/MyButton";
+import { usePosts } from "./hooks/usePosts";
 
 
 function App() {
@@ -23,17 +24,8 @@ function App() {
   // если мы удаляем или добавляем пост,а также меняем алгоритм сортировки, 
   // но не при вводе в строку поиска,как это было прежде. 
   const [modal, setModal] = useState(false)
-  const sortedPosts = useMemo(()=>{
-    if (filter.sort) {
-      return [...posts].sort((a,b)=> a[filter.sort].localeCompare(b[filter.sort]))
-    }
-    return posts;
-  },[filter.sort, posts]);
-
-  const sortedAndSearchedPosts = useMemo (()=>{
-    return sortedPosts.filter(post=> post.title.toLowerCase().includes(filter.query))
-  },[filter.query, sortedPosts])
-
+  const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
+  
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
     setModal(false);
