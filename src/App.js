@@ -7,8 +7,9 @@ import PostFilter from "./components/PostFilter";
 import MyModal from "./UI/MyModal/MyModal";
 import MyButton from "./UI/button/MyButton";
 import PostService from "./API/PostService";
-import { usePosts } from "./hooks/usePosts";
 import Loader from "./UI/Loader/Loader";
+import { usePosts } from "./hooks/usePosts";
+import { useFetching } from "./hooks/useFetching";
 import { useState } from "react";
 import { useEffect } from "react";
 
@@ -24,7 +25,10 @@ function App() {
   // если мы удаляем или добавляем пост,а также меняем алгоритм сортировки, 
   // но не при вводе в строку поиска,как это было прежде. 
   const [modal, setModal] = useState(false)
-  const [isPostsLoading, setIsPostsLoading]=useState(false)
+  const [fetchPosts, isPostsLoading, postError] = useFetching(async ()=>{
+    const posts = await PostService.getAll()
+    setPosts(posts)
+  });
   const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
 
   useEffect(() => {
@@ -34,13 +38,6 @@ function App() {
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
     setModal(false);
-  }
-
-  async function fetchPosts() {
-    setIsPostsLoading(true)
-    const posts = await PostService.getAll()
-    setPosts(posts)
-    setIsPostsLoading(false)
   }
 
   const removePost = (post) => {
@@ -59,6 +56,9 @@ function App() {
         <hr style={{margin: '15px 0'}}/>
         <PostFilter filter={filter} setFilter={setFilter}/>
         {/* Условная отрисовка: */}
+        {
+          postError && <h1>Произошла ошибка</h1>
+        }
         {isPostsLoading 
               ?  <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div> 
               :  <PostList remove={removePost} posts={sortedAndSearchedPosts} title='Список постов 1:'/>
